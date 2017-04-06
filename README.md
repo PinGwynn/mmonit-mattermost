@@ -13,7 +13,7 @@ Both M/Monit and Monit can quite easy be setup to send alerts to almost any onli
 
 On the Mattermost side you will first need to activate an integration and obtain a token integrations by adding an "Incoming WebHooks" integration. 
 
-Solution is most idential as Slak integration: https://mmonit.com/wiki/MMonit/SlackNotification
+The solution is most the same as for Slack integration: https://mmonit.com/wiki/MMonit/SlackNotification
 
 ```
 /usr/local/bin/mm-notify.py --url https://mattermost.server/hooks/<token> --notificationtype "$MONIT_ACTION"
