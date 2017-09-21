@@ -26,9 +26,13 @@
 import argparse
 import json
 try:
-    import urllib2  # python2
+    # python2
+    import urllib2
+    from urllib import urlencode
 except ModuleNotFoundError:
-    import urllib.request as urllib2  # python3
+    # python3
+    from urllib.parse import urlencode
+    import urllib.request as urllib2
 import os
 
 VERSION = "0.0.1"
@@ -48,11 +52,6 @@ def parse():
                         version='% (prog)s {version}'.format(version=VERSION))
     args = parser.parse_args()
     return args
-
-
-def encode_special_characters(text):
-    text = text.replace("%", "%25")
-    return text
 
 
 def make_data(args):
@@ -89,13 +88,13 @@ def make_data(args):
     payload = {
         "username": args.username,
         "icon_url": args.iconurl,
-        "text": encode_special_characters(text)
+        "text": text
     }
 
     if args.channel:
         payload["channel"] = args.channel
 
-    data = "payload=" + json.dumps(payload)
+    data = urlencode({'payload': json.dumps(payload)})
     return data
 
 
