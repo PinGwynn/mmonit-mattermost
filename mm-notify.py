@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 # Copyright (c) 2017 Maxim Odinintsev
-# 
+#
 # Based on Nagios notification plugin by NDrive
 # https://github.com/NDrive/nagios-mattermost
 #
@@ -30,6 +30,7 @@ import os
 
 VERSION = "0.0.1"
 
+
 def parse():
     parser = argparse.ArgumentParser(description='Sends alerts to Mattermost')
     parser.add_argument('--url', help='Incoming Webhook URL', required=True)
@@ -38,7 +39,8 @@ def parse():
                         default='m/monit notify')
     parser.add_argument('--iconurl', help='URL of icon to use for username',
                         default='https://mmonit.com/monit/img/logo.png') # noqa
-    parser.add_argument('--notificationtype', help='Notification Type', default='none')
+    parser.add_argument('--notificationtype', help='Notification Type',
+                        default='none')
     parser.add_argument('--version', action='version',
                         version='% (prog)s {version}'.format(version=VERSION))
     args = parser.parse_args()
@@ -51,10 +53,19 @@ def encode_special_characters(text):
 
 
 def make_data(args):
-    template = "**" + os.environ['MONIT_ACTION'] + "**\n**" + os.environ['MONIT_EVENT'] + "**\n\nHost affected: **" + os.environ['MONIT_HOST'] + "**\nService affected: **" + os.environ['MONIT_SERVICE'] + "**\nDetails: " + os.environ['MONIT_DESCRIPTION']
+    template = "**{action}**\n" \
+               "**{event}**\n\n" \
+               "Host affected: **{host}**\n" \
+               "Service affected: **{service}**\n" \
+               "Details: {details}" \
+               .format(action=os.environ['MONIT_ACTION'],
+                       event=os.environ['MONIT_EVENT'],
+                       host=os.environ['MONIT_HOST'],
+                       service=os.environ['MONIT_SERVICE'],
+                       details=os.environ['MONIT_DESCRIPTION'])
 
     # Emojis
-    print args.notificationtype.lower()
+    print(args.notificationtype.lower())
     if args.notificationtype.lower() == "alert":
         EMOJI = ":sos: "
     elif args.notificationtype.lower() == "stop":
@@ -95,4 +106,4 @@ if __name__ == "__main__":
     args = parse()
     data = make_data(args)
     response = request(args.url, data)
-    print response
+    print(response)
