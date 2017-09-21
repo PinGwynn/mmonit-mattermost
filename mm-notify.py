@@ -25,7 +25,10 @@
 
 import argparse
 import json
-import urllib2
+try:
+    import urllib2  # python2
+except ModuleNotFoundError:
+    import urllib.request as urllib2  # python3
 import os
 
 VERSION = "0.0.1"
@@ -38,7 +41,7 @@ def parse():
     parser.add_argument('--username', help='Username to notify as',
                         default='m/monit notify')
     parser.add_argument('--iconurl', help='URL of icon to use for username',
-                        default='https://mmonit.com/monit/img/logo.png') # noqa
+                        default='https://mmonit.com/monit/img/logo.png')  # noqa
     parser.add_argument('--notificationtype', help='Notification Type',
                         default='none')
     parser.add_argument('--version', action='version',
@@ -97,7 +100,8 @@ def make_data(args):
 
 
 def request(url, data):
-    req = urllib2.Request(url, data)
+    binary_data = data.encode('ascii')
+    req = urllib2.Request(url, binary_data)
     response = urllib2.urlopen(req)
     return response.read()
 
