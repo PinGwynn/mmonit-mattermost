@@ -64,9 +64,9 @@ def make_data(args):
     elif args.notificationtype.lower() == "restart":
         EMOJI = ":arrows_counterclockwise: "
     elif args.notificationtype.lower() == "exec":
-  EMOJI = ":interrobang: "
+        EMOJI = ":interrobang: "
     elif args.notificationtype.lower() == "unmonitor":
-  EMOJI = ":heavy_exclamation_mark: "
+        EMOJI = ":heavy_exclamation_mark: "
     else:
         EMOJI = ""
 
