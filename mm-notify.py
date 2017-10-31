@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 # Copyright (c) 2017 Maxim Odinintsev
-# 
+#
 # Based on Nagios notification plugin by NDrive
 # https://github.com/NDrive/nagios-mattermost
 #
@@ -25,10 +25,18 @@
 
 import argparse
 import json
-import urllib2
+try:
+    # python2
+    import urllib2
+    from urllib import urlencode
+except ModuleNotFoundError:
+    # python3
+    from urllib.parse import urlencode
+    import urllib.request as urllib2
 import os
 
 VERSION = "0.0.1"
+
 
 def parse():
     parser = argparse.ArgumentParser(description='Sends alerts to Mattermost')
@@ -37,24 +45,29 @@ def parse():
     parser.add_argument('--username', help='Username to notify as',
                         default='m/monit notify')
     parser.add_argument('--iconurl', help='URL of icon to use for username',
-                        default='https://mmonit.com/monit/img/logo.png') # noqa
-    parser.add_argument('--notificationtype', help='Notification Type', default='none')
+                        default='https://mmonit.com/monit/img/logo.png')  # noqa
+    parser.add_argument('--notificationtype', help='Notification Type',
+                        default='none')
     parser.add_argument('--version', action='version',
                         version='% (prog)s {version}'.format(version=VERSION))
     args = parser.parse_args()
     return args
 
 
-def encode_special_characters(text):
-    text = text.replace("%", "%25")
-    return text
-
-
 def make_data(args):
-    template = "**" + os.environ['MONIT_ACTION'] + "**\n**" + os.environ['MONIT_EVENT'] + "**\n\nHost affected: **" + os.environ['MONIT_HOST'] + "**\nService affected: **" + os.environ['MONIT_SERVICE'] + "**\nDetails: " + os.environ['MONIT_DESCRIPTION']
+    template = "**{action}**\n" \
+               "**{event}**\n\n" \
+               "Host affected: **{host}**\n" \
+               "Service affected: **{service}**\n" \
+               "Details: {details}" \
+               .format(action=os.environ['MONIT_ACTION'],
+                       event=os.environ['MONIT_EVENT'],
+                       host=os.environ['MONIT_HOST'],
+                       service=os.environ['MONIT_SERVICE'],
+                       details=os.environ['MONIT_DESCRIPTION'])
 
     # Emojis
-    print args.notificationtype.lower()
+    print(args.notificationtype.lower())
     if args.notificationtype.lower() == "alert":
         EMOJI = ":sos: "
     elif args.notificationtype.lower() == "stop":
@@ -64,9 +77,9 @@ def make_data(args):
     elif args.notificationtype.lower() == "restart":
         EMOJI = ":arrows_counterclockwise: "
     elif args.notificationtype.lower() == "exec":
-  EMOJI = ":interrobang: "
+        EMOJI = ":interrobang: "
     elif args.notificationtype.lower() == "unmonitor":
-  EMOJI = ":heavy_exclamation_mark: "
+        EMOJI = ":heavy_exclamation_mark: "
     else:
         EMOJI = ""
 
@@ -75,18 +88,19 @@ def make_data(args):
     payload = {
         "username": args.username,
         "icon_url": args.iconurl,
-        "text": encode_special_characters(text)
+        "text": text
     }
 
     if args.channel:
         payload["channel"] = args.channel
 
-    data = "payload=" + json.dumps(payload)
+    data = urlencode({'payload': json.dumps(payload)})
     return data
 
 
 def request(url, data):
-    req = urllib2.Request(url, data)
+    binary_data = data.encode('ascii')
+    req = urllib2.Request(url, binary_data)
     response = urllib2.urlopen(req)
     return response.read()
 
@@ -95,4 +109,4 @@ if __name__ == "__main__":
     args = parse()
     data = make_data(args)
     response = request(args.url, data)
-    print response
+    print(response)
